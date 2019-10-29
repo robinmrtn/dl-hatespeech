@@ -8,8 +8,7 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 class Tokenizer:
   """"""
   def __init__(self, language='english', oov_token=None):
-    
-    
+        
     if language == 'english':
       self.nlp = spacy.load('en_core_web_sm')
     elif language == 'german': 
@@ -25,8 +24,8 @@ class Tokenizer:
       self.word_count = 0
       
     self.vocab = dict()
-    self.reverse_vocab = dict()    
-    
+    self.reverse_vocab = dict()  
+
     
   def fit(self, texts):
     
@@ -40,15 +39,12 @@ class Tokenizer:
         if token.text.lower() not in self.vocab:
           self.vocab[token.text.lower()] = self.word_count + 1
           self.reverse_vocab[self.word_count + 1] = token.text.lower()        
-          self.word_count += 1
+          self.word_count += 1       
         
-    
-    
   
   def texts_to_sequences(self, texts):
     
-    sequences = list()         
-    
+    sequences = list()        
     
     for text in texts:
       sequence = list()
@@ -60,8 +56,7 @@ class Tokenizer:
         elif self.oov_token is not None:
           sequence.append(self.vocab[self.oov_token])
       
-      sequences.append(sequence)  
-                         
+      sequences.append(sequence)                           
          
     return sequences
     
@@ -82,8 +77,7 @@ class Tokenizer:
       texts.append(text)
     
     return texts
-  
-  
+    
     
   def create_weight_matrix(self, word_embedding):
     embedding_matrix = None
@@ -104,6 +98,7 @@ class Tokenizer:
         embedding_matrix[index] = word_embedding.get(word)
     
     return embedding_matrix
+
 
 class WordEmbedding:
   """docstring"""
@@ -132,8 +127,7 @@ class WordEmbedding:
     else:
       raise ValueError("Dimensions must be between 50 and 300.")  
           
-    
-      
+          
   def load(self, filepath, encoding="utf-8"):    
     
     self.embedding = np.empty(shape=(self.__count_lines(filepath, encoding),
@@ -151,8 +145,7 @@ class WordEmbedding:
       self.embedding[i] = embedding
       self.vocab[word] = i
       i += 1
-    f.close()
-  
+    f.close()  
       
 
   def get(self, word, include_oov=True):

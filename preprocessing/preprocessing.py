@@ -106,6 +106,7 @@ class WordEmbedding:
     
     self.embedding = None
     self.vocab = None
+    self.reverse_vocab = None
     if oov_init in ('zero', 'rand'):
       self.oov_init = oov_init
     else:
@@ -133,6 +134,7 @@ class WordEmbedding:
     self.embedding = np.empty(shape=(self.__count_lines(filepath, encoding),
                                      self.dimensions))
     self.vocab = {}
+    self.reverse_vocab = {}
     i = 0
     
     f = open(filepath, encoding=encoding)
@@ -144,6 +146,7 @@ class WordEmbedding:
         
       self.embedding[i] = embedding
       self.vocab[word] = i
+      self.reverse_vocab[i] = word
       i += 1
     f.close()  
       

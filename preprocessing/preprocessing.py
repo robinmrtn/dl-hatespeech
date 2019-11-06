@@ -13,7 +13,7 @@ def create_language(language="english"):
     nlp = spacy.load('de_core_news_md')
   else:
     raise ValueError(f"Language '{language}' not found.")
-  
+
   '''add special tokens to spacy Tokenizer'''
   nlp.tokenizer.add_special_case(u'[user]',
       [
@@ -36,14 +36,12 @@ def create_language(language="english"):
 
 class Tokenizer:
   """"""
-  def __init__(self, language='english', oov_token=None):
+  def __init__(self, nlp, oov_token=None):
         
-    if language == 'english':
-      self.nlp = spacy.load('en_core_web_sm')
-    elif language == 'german': 
-      self.nlp = spacy.load('de_core_news_md')
+    if isinstance(nlp, spacy.language.Language):
+      self.nlp = nlp
     else:
-      raise ValueError(f"Language '{language}' not found.")
+      raise TypeError(f"Parameter 'nlp' must be a Language object.")
     
     self.oov_token = oov_token
     

@@ -5,6 +5,17 @@ import spacy
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 
+def create_language(language="english"):
+  if language == 'english':
+    nlp = spacy.load('en_core_web_sm')
+  elif language == 'german': 
+    nlp = spacy.load('de_core_news_md')
+  else:
+    raise ValueError(f"Language '{language}' not found.")
+
+  return nlp
+
+
 class Tokenizer:
   """"""
   def __init__(self, language='english', oov_token=None):

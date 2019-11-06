@@ -1,6 +1,7 @@
 import numpy as np
 import io, os
 import spacy
+from spacy.symbols import ORTH, LEMMA, POS
 
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
@@ -12,6 +13,23 @@ def create_language(language="english"):
     nlp = spacy.load('de_core_news_md')
   else:
     raise ValueError(f"Language '{language}' not found.")
+  
+  '''add special tokens to spacy Tokenizer'''
+  nlp.tokenizer.add_special_case(u'[user]',
+      [
+          {
+              ORTH: u'[user]',
+              LEMMA: u'[user]',
+              POS: u'NOUN'}
+      ])
+
+  nlp.tokenizer.add_special_case(u'[link]',
+      [
+          {
+              ORTH: u'[link]',
+              LEMMA: u'[link]',
+              POS: u'NOUN'}
+      ])
 
   return nlp
 

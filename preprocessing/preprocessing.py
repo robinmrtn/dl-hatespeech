@@ -30,7 +30,7 @@ class Tokenizer:
   def fit(self, texts):
     
     if self.oov_token is not None:
-      self.vocab[oov_token] = 1
+      self.vocab[self.oov_token] = 1
       self.reverse_vocab[1] = self.oov_token    
     
     for text in texts:
@@ -70,7 +70,7 @@ class Tokenizer:
        
         if element in self.reverse_vocab:
           text.append(self.reverse_vocab[element])
-        elif oov_token is not None:
+        elif self.oov_token is not None:
           text.append(self.oov_token)
       
       text = ' '.join(text)

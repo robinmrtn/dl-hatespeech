@@ -6,7 +6,7 @@ from spacy.symbols import ORTH, LEMMA, POS
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 
-def create_language(language="english"):
+def create_language(language='english'):
   if language == 'english':
     nlp = spacy.load('en_core_web_sm')
   elif language == 'german': 
@@ -197,7 +197,7 @@ class WordEmbedding:
   def __count_lines(self, filepath, encoding):
     num_lines = 0
     
-    f = open(filepath, encoding="utf-8")
+    f = open(filepath, encoding=encoding)
     for line in f:
       num_lines += 1
     

@@ -2,17 +2,27 @@ import numpy as np
 import io, os
 import spacy
 from spacy.symbols import ORTH, LEMMA, POS
+from spacy.tokenizer import Tokenizer as spacyTokenizer
 
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 
-def create_language(language='english'):
+def create_language(language='english', whitespace_tokenizer=False):
+
+  nlp = spacy.load('en_core_web_sm')
+    s1 = nlp("dog's are funny animal's's._ ")
+    
+    s2 = nlp("dog's are funny animal's's._ ")
+
   if language == 'english':
     nlp = spacy.load('en_core_web_sm')
   elif language == 'german': 
     nlp = spacy.load('de_core_news_md')
   else:
     raise ValueError(f"Language '{language}' not found.")
+  
+  if whitespace_tokenizer:
+    nlp.tokenizer = spacyTokenizer(nlp.vocab)
 
   '''add special tokens to spacy Tokenizer'''
   nlp.tokenizer.add_special_case(u'[user]',

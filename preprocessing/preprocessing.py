@@ -3,6 +3,7 @@ import io, os
 import spacy
 from spacy.symbols import ORTH, LEMMA, POS
 from spacy.tokenizer import Tokenizer as spacyTokenizer
+from collections import OrderedDict
 
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
@@ -51,12 +52,13 @@ class Tokenizer:
     self.oov_token = oov_token
     
     if self.oov_token is not None:
-      self.word_count = 1
+      self.n_words = 1
     else:
-      self.word_count = 0
+      self.n_words = 0
       
     self.vocab = dict()
-    self.reverse_vocab = dict()  
+    self.reverse_vocab = dict()
+    self.words_count = OrderedDict()  
 
     
   def fit(self, texts):
@@ -68,10 +70,21 @@ class Tokenizer:
     for text in texts:
       doc = self.nlp(text)
       for token in doc:
+        '''add word to vocab, if word is not in vocab'''
         if token.text.lower() not in self.vocab:
-          self.vocab[token.text.lower()] = self.word_count + 1
-          self.reverse_vocab[self.word_count + 1] = token.text.lower()        
-          self.word_count += 1       
+          self.vocab[token.text.lower()] = self.n_words + 1
+          self.reverse_vocab[self.n_words + 1] = token.text.lower()        
+          self.n_words += 1 
+        
+        ''' '''
+        if token.text.lower() not in self.words_count:
+          self.words_count[token.text.lower()] = 1
+        else:
+          self.words_count[token.text.lower()] += 1
+    
+    '''reorder word_counts'''
+    self.words_count = OrderedDict(sorted(self.words_count.items(), key=lambda t: t[1], reverse=True))
+
         
   
   def texts_to_sequences(self, texts):
@@ -118,12 +131,12 @@ class Tokenizer:
       if word_embedding.oov_init == 'rand':
         embedding_matrix = word_embedding.random_state.default_rng().uniform(-0.5,
                                                                                 0.5,
-                                                              size=(self.word_count+1,
+                                                              size=(self.n_words+1,
                                                                     word_embedding.dimensions))
         embedding_matrix[0] = np.zeros(word_embedding.dimensions)
         
       elif word_embedding.oov_init == 'zero':
-        embedding_matrix = np.zeros((self.word_count+1, word_embedding.dimensions))
+        embedding_matrix = np.zeros((self.n_words+1, word_embedding.dimensions))
         
       for word, index in self.vocab.items():
         

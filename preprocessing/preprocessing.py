@@ -8,9 +8,7 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 
 def create_language(language='english', whitespace_tokenizer=False):
-
-  nlp = spacy.load('en_core_web_sm')
-  
+    
   if language == 'english':
     nlp = spacy.load('en_core_web_sm')
   elif language == 'german': 

@@ -124,8 +124,9 @@ class Tokenizer:
     return texts
     
     
-  def create_weight_matrix(self, word_embedding):
+  def create_weight_matrix(self, word_embedding, return_not_in_wordembedding=False):
     embedding_matrix = None
+    out_of_wordembedding = []
     if isinstance(word_embedding, WordEmbedding):
       
       if word_embedding.oov_init == 'rand':
@@ -139,10 +140,17 @@ class Tokenizer:
         embedding_matrix = np.zeros((self.n_words+1, word_embedding.dimensions))
         
       for word, index in self.vocab.items():
+
+        if word not in word_embedding.vocab:
+          out_of_wordembedding.append(word)
         
         embedding_matrix[index] = word_embedding.get(word)
-    
-    return embedding_matrix
+    else:
+      raise TypeError("Parameter 'word_embedding' must be an instance of WordEmbedding.")
+    if return_not_in_wordembedding:
+      return embedding_matrix, out_of_wordembedding
+    else:
+      return word_embedding
 
 
 class WordEmbedding:

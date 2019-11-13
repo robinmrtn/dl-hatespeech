@@ -1,14 +1,10 @@
-from sklearn.model_selection import train_test_split
-
-import tensorflow as tf
 import time
-import pandas as pd
-
 class Trainer:
-  def __init__(self, model, optimizer, seed=9):
+  def __init__(self, optimizer, seed=9):
     self.optimizer = optimizer
-    self.model = model
     self.seed = seed
+
+    self.model = None
 
     self.loss_fn = tf.keras.losses.BinaryCrossentropy()
     
@@ -20,10 +16,18 @@ class Trainer:
     self.val_recall = tf.keras.metrics.Recall()
     
 
+  def load_model(self, model):
+    self.model = model
+  
   def train(self,
             dataset,
             epochs,
-            batch_size):
+            batch_size,
+            search_mode=False):
+    
+    if self.model is None:
+      raise RuntimeError('No model loaded.')
+
     X_train, X_val, y_train, y_val = train_test_split(dataset[0],
                                                       dataset[1], 
                                                         test_size=0.1, 
@@ -71,15 +75,18 @@ class Trainer:
       print(f"Val Accuracy: {self.val_acc.result()}")
       print(f"Val Precision: {self.val_precision.result()}")
       print(f"Val Recall: {self.val_recall.result()}")
-      
+      #print(f"Val F1 on epoch {epoch}: {self.val_f1.result()}")
       self.train_acc.reset_states()
       self.val_acc.reset_states()
       self.val_precision.reset_states()
       self.val_recall.reset_states()
-      
+      #self.val_f1.reset_states()
     history_df = pd.DataFrame(data=history_array, columns=history_columns)
 
-    return history_df
+    if search_mode:
+      return dict(zip(history_columns,history_array[-1].tolist()))
+    else:
+      return history_df
 
   @tf.function
   def train_batch(self, X, y):
@@ -113,4 +120,3 @@ class Trainer:
     loss_value = self.loss_fn(y, val_logits)
 
     return loss_value
-

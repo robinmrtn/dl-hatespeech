@@ -1,5 +1,6 @@
 import time
 import tensorflow as tf
+import pandas as pd
 class Trainer:
   def __init__(self, optimizer, seed=9):
     self.optimizer = optimizer
@@ -76,12 +77,12 @@ class Trainer:
       print(f"Val Accuracy: {self.val_acc.result()}")
       print(f"Val Precision: {self.val_precision.result()}")
       print(f"Val Recall: {self.val_recall.result()}")
-      #print(f"Val F1 on epoch {epoch}: {self.val_f1.result()}")
+      
       self.train_acc.reset_states()
       self.val_acc.reset_states()
       self.val_precision.reset_states()
       self.val_recall.reset_states()
-      #self.val_f1.reset_states()
+      
     history_df = pd.DataFrame(data=history_array, columns=history_columns)
 
     if search_mode:
@@ -109,12 +110,10 @@ class Trainer:
   def validate_batch(self, X, y):
 
     val_logits = self.model(X)
-    #val_logits = tf.reshape(val_logits,shape=y.shape)
+    
     y = tf.reshape(y ,shape=val_logits.shape)
     self.val_acc(y, val_logits)
-    #print(f"logits ndim: {val_logits.ndim} shape: {val_logits.shape}")
-    #print(f"y ndim: {y.ndim} shape: {y.shape}")
-    #self.val_f1(y, val_logits)
+    
     self.val_precision(y, val_logits)
     self.val_recall(y, val_logits)
 

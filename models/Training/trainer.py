@@ -1,6 +1,7 @@
 import time
 import tensorflow as tf
 import pandas as pd
+from sklearn.model_selection import train_test_split
 class Trainer:
   def __init__(self, optimizer, seed=9):
     self.optimizer = optimizer

@@ -1,4 +1,5 @@
 import time
+import tensorflow as tf
 class Trainer:
   def __init__(self, optimizer, seed=9):
     self.optimizer = optimizer

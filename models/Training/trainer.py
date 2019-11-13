@@ -56,9 +56,7 @@ class Trainer:
        
       print(f'Train Loss on epoch {epoch}: {loss_value}')
       print(f'Train Accuracy on epoch {epoch}: {self.train_acc.result()}')
-
       
-
       for X_batch_val, y_batch_val in val_dataset:
        
         loss_value_val = self.validate_batch(X_batch_val, y_batch_val)

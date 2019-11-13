@@ -30,7 +30,6 @@ class HyperparameterSearch:
     if log_file is not None:
       self.log_file = log_file
             
-        
   def grid_search(self, n=None):
 
     max_unique_combs = np.prod([len(i) for i in  list(self.hparams.values())])
@@ -42,7 +41,6 @@ class HyperparameterSearch:
     for i in range(n):
       self._grid_search_generator(hparams_space[i])
       pass
-
 
 
   def _grid_search_generator(self, hparams):
@@ -69,10 +67,8 @@ class HyperparameterSearch:
         if line_nums == 0:
           writer.writeheader()
         writer.writerow(hparams)
-            
+        
     
-
-
   def _create_hparam_space(self, n):
                   
     i = 0

@@ -1,4 +1,5 @@
 import time
+import numpy as np
 import tensorflow as tf
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -29,7 +30,7 @@ class Trainer:
             epochs,
             batch_size,
             search_mode=False,
-            patience=10):
+            patience=5):
         
     
     if self.model is None:
@@ -42,6 +43,7 @@ class Trainer:
                                                         test_size=0.1 
                                                         , random_state=9)
     stopping_step = 0
+    best_acc = tf.constant(0.0)
 
     train_dataset = tf.data.Dataset.from_tensor_slices((X_train, y_train))    
     train_dataset = train_dataset.shuffle(buffer_size=1024,seed=SEED).batch(batch_size)
@@ -57,35 +59,36 @@ class Trainer:
     train_batch_fun = self.train_batch_fn()
     
     for epoch in range(epochs):
-      epoch += 1
-      best_acc = 0
+      epoch += 1     
       
       print(f'Start of epoch {epoch}:')
       start_time = time.time()
       for step, (X_batch_train, y_batch_train) in enumerate(train_dataset):
-        train_acc, loss_value = train_batch_fun(X_batch_train, y_batch_train,
+         loss_value, train_acc = train_batch_fun(X_batch_train, y_batch_train,
                                      self.model, self.optimizer, self.loss_fn,
                                       self.train_acc)
-        #loss_value = self.train_batch(X_batch_train, y_batch_train, self.optimizer)
-        #self.train_acc = train_acc
+        
       print(f'Train Loss on epoch {epoch}: {loss_value}')
       print(f'Train Accuracy on epoch {epoch}: {train_acc}')
 
       for X_batch_val, y_batch_val in val_dataset:
        
-        loss_value_val = self.validate_batch(X_batch_val, y_batch_val)
+        loss_value_val, val_acc, val_precision, val_recall = self.validate_batch(self.model,
+                                                                                 X_batch_val, y_batch_val,
+                                             self.loss_fn, self.val_acc,
+                                             self.val_precision, self.val_recall)
       
       val_f1 = 2 * (self.val_recall.result() * self.val_precision.result()) / (self.val_recall.result() + self.val_precision.result())
       end_time = time.time()
       runtime = end_time-start_time
       history_array[epoch-1] = np.array([loss_value,
-                                         self.train_acc.result(),
+                                         train_acc,
                                          loss_value_val,
-                                         self.val_acc.result(),
-                                         self.val_precision.result(),
-                                         self.val_recall.result(),
+                                         val_acc,
+                                         val_precision,
+                                         val_recall,
                                          val_f1,
-                                         runtime]).round(5)
+                                         runtime]).round(6)
       print(f"Val Loss: {loss_value_val}")
       print(f"Val Accuracy: {self.val_acc.result()}")
       print(f"Val Precision: {self.val_precision.result()}")
@@ -93,10 +96,15 @@ class Trainer:
       
       '''early stopping'''
       
-      if best_acc < val_acc.result():
-        best_acc = val_acc.result()
+      if epoch == 1:
+        best_history = history_array[epoch-1]
+      print(val_acc.numpy().astype(float), " > ", best_acc.numpy().astype(float) )
+      print(f"cond: {self.val_acc.result().numpy().astype(float) > best_acc.numpy().astype(float)}")
+      if tf.math.greater(val_acc.numpy(), best_acc).numpy():
+        best_acc = val_acc
         best_history = history_array[epoch-1]
         stopping_step = 0
+        print(f"new best acc={best_acc}")
       else:
         stopping_step += 1
       
@@ -104,12 +112,7 @@ class Trainer:
         print('Early stopping triggerd!')
         history_array[-1] = best_history
         break
-
-      
-
-
-
-
+ 
       self.train_acc.reset_states()
       self.val_acc.reset_states()
       self.val_precision.reset_states()
@@ -142,17 +145,18 @@ class Trainer:
 
     return train_batch
 
+  @staticmethod
   @tf.function
-  def validate_batch(self, X, y):
+  def validate_batch(model, X, y, loss_fn, val_acc, val_precision, val_recall):
 
-    val_logits = self.model(X)
+    val_logits = model(X)
     
     y = tf.reshape(y ,shape=val_logits.shape)
-    self.val_acc(y, val_logits)
+    val_acc(y, val_logits)
     
-    self.val_precision(y, val_logits)
-    self.val_recall(y, val_logits)
+    val_precision(y, val_logits)
+    val_recall(y, val_logits)
 
-    loss_value = self.loss_fn(y, val_logits)
+    loss_value = loss_fn(y, val_logits)
 
-    return loss_value  
+    return loss_value, val_acc.result(), val_precision.result(), val_recall.result() 
